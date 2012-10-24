@@ -1,0 +1,4 @@
+Cleaner Image Markup 1.0.0
+==========================
+
+* Initial release
