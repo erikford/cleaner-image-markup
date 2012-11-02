@@ -4,7 +4,7 @@
 Plugin Name: Cleaner Image Markup
 Plugin URI: http://www.wearepixel8.com
 Description: A simple plugin that will clean up the HTML image markup produced by WordPress.
-Version: 1.0.0
+Version: 1.0.1
 Author: We Are Pixel8
 Author URI: http://www.wearepixel8.com
 License:
@@ -35,6 +35,7 @@ add_filter( 'the_content', 'wap8_remove_autop', 10, 1 );
  * Remove the automatic wrapping of images with a paragraph tag.
  *
  * @param $content
+ * @return $content
  *
  * @package Cleaner Image Markup
  * @version 1.0.0
@@ -52,38 +53,6 @@ function wap8_remove_autop( $content ) {
 }
 
 /*----------------------------------------------------------------------------*/
-/* Fewer Image Classes
-/*----------------------------------------------------------------------------*/
-
-add_filter( 'get_image_tag_class', 'wap8_fewer_image_classes', 10, 4 );
-
-/**
- * Fewer Image Classes
- *
- * Reduce the amount of classes, applied to an image in a post, to simply
- * alignleft, alignright, aligncenter or alignnone.
- *
- * @param $class
- * @param $id
- * @param $align
- * @param $size
- *
- * @package Cleaner Image Markup
- * @version 1.0.0
- * @since 1.0.0
- * @author Erik Ford for We Are Pixel8 <@notdivisible>
- *
- */
-
-function wap8_fewer_image_classes( $class, $id, $align, $size ) {
-	
-	$align = 'align' . esc_attr( $align );
-	
-	return $align;
-
-}
-
-/*----------------------------------------------------------------------------*/
 /* Remove Width And Height Attributes
 /*----------------------------------------------------------------------------*/
 
@@ -97,6 +66,7 @@ add_filter( 'the_content', 'wap8_remove_width_height_attr', 10, 1 );
  * Remove the width and height attributes from the img tag.
  *
  * @param $html
+ * @return $html
  *
  * @package Cleaner Image Markup
  * @version 1.0.0
@@ -122,7 +92,8 @@ add_filter( 'img_caption_shortcode', 'wap8_html5_image_caption', 10, 3 );
 /**
  * HTML5 Image Figure And Figcaption Markup
  *
- * Return valid HTML5 markup for images with captions.
+ * Return valid HTML5 markup for images with captions by filtering the WordPress
+ * Caption shortcode.
  *
  * @param $val
  * @param $attr
@@ -155,6 +126,196 @@ function wap8_html5_image_caption( $val, $attr, $content = null ) {
 
 	return '<figure ' . $id . 'class="wp-caption ' . esc_attr( $align ) . '">' . do_shortcode( $content ) . '<figcaption class="wp-caption-text">'  . $caption . '</figcaption></figure>';
 
+}
+
+/*----------------------------------------------------------------------------*/
+/* Tidy Gallery
+/*----------------------------------------------------------------------------*/
+
+add_filter( 'post_gallery', 'wap8_tidy_gallery', 10, 2 );
+
+/**
+ * Tidy Gallery
+ *
+ * Remove inline styles for the default WordPress Gallery by filtering the
+ * WordPress Gallery shortcode.
+ *
+ * @param $output
+ * @param $attr
+ * @return $output
+ *
+ * @package Cleaner Image Markup
+ * @version 1.0.1
+ * @since 1.0.1
+ * @author Erik Ford for We Are Pixel8 <@notdivisible>
+ *
+ */
+
+
+
+function wap8_tidy_gallery( $output, $attr ) {
+
+	global $post, $wp_locale;
+	
+	static $instance = 0;
+	$instance++;
+	
+	// we're trusting author input, so let's at least make sure it looks like a valid orderby statement
+	if ( isset( $attr['orderby'] ) ) {
+	
+		$attr['orderby'] = sanitize_sql_orderby( $attr['orderby'] );
+		
+		if ( !$attr['orderby'] ) unset( $attr['orderby'] );
+			
+	}
+	
+	extract( shortcode_atts( array(
+		'order'      => 'ASC',
+		'orderby'    => 'menu_order ID',
+		'id'         => $post->ID,
+		'itemtag'    => 'dl',
+		'icontag'    => 'dt',
+		'captiontag' => 'dd',
+		'columns'    => 3,
+		'size'       => 'thumbnail',
+		'include'    => '',
+		'exclude'    => ''
+	), $attr ) );
+	
+	$id = intval( $id );
+	
+	if ( 'RAND' == $order ) $orderby = 'none';
+	
+	if ( !empty( $include ) ) {
+	
+		$include = preg_replace( '/[^0-9,]+/', '', $include );
+		
+		// arguments for included images
+		$incimgs = array(
+			'include'			=> $include,
+			'post_status'		=> 'inherit',
+			'post_type'			=> 'attachment',
+			'post_mime_type'	=> 'image',
+			'order'				=> $order,
+			'orderby'			=> $orderby
+		);
+		
+		$_attachments = get_posts( $incimgs );
+		
+		$attachments = array();
+		
+		foreach ( $_attachments as $key => $val ) {
+		
+			$attachments[$val->ID] = $_attachments[$key];
+			
+		}
+	
+	} elseif ( !empty( $exclude ) ) {
+	
+		$exclude = preg_replace( '/[^0-9,]+/', '', $exclude );
+		
+		// arguments for excluded images
+		$eximgs = array(
+			'post_parent'		=> $id,
+			'exclude'			=> $exclude,
+			'post_status'		=> 'inherit',
+			'post_type'			=> 'attachment',
+			'post_mime_type'	=> 'image',
+			'order'				=> $order,
+			'orderby'			=> $orderby
+		);
+		
+		$attachments = get_children( $eximgs );
+		
+	} else {
+	
+		// arguments for all images
+		$allimgs = array(
+			'post_parent'		=> $id,
+			'post_status'		=> 'inherit',
+			'post_type'			=> 'attachment',
+			'post_mime_type'	=> 'image',
+			'order'				=> $order,
+			'orderby'			=> $orderby
+		);
+	
+		$attachments = get_children( $allimgs );
+		
+	}
+	
+	if ( empty( $attachments ) ) return '';
+
+	if ( is_feed() ) {
+	
+		$output = "\n";
+		
+		foreach ( $attachments as $att_id => $attachment )
+		
+			$output .= wp_get_attachment_link( $att_id, $size, true ) . "\n";
+			
+		return $output;
+		
+	}
+	
+	// escape the gallery tags
+	$itemtag = tag_escape( $itemtag );
+	$icontag = tag_escape( $icontag );
+	$captiontag = tag_escape( $captiontag );
+	
+	// store the gallery instance
+	$selector = "gallery-{$instance}";
+	
+	// store the set columns
+	$columns = intval( $columns );
+	$i = 0;
+	
+	// open the gallery div
+	$output = "\n\t\t\t<div id='$selector' class='gallery gallery-{$id}'>";
+	
+	// loop through each attachment
+	foreach ( $attachments as $id => $attachment ) {
+	
+		// open each gallery row
+		if ( $columns > 0 && $i % $columns == 0 )
+			$output .= "\n\t\t\t\t<div class='gallery-row clear'>";
+			
+		// open each gallery item
+		$output .= "\n\t\t\t\t\t<{$itemtag} class='gallery-item col-{$columns}'>";
+		
+		// open the element that wraps the image
+		$output .= "\n\t\t\t\t\t\t<{$icontag} class='gallery-icon'>";
+		
+		// add the image
+		$link = ( ( isset( $attr['link'] ) && 'file' == $attr['link'] ) ? wp_get_attachment_link( $id, $size, false, false ) : wp_get_attachment_link( $id, $size, true, false ) );
+		$output .= $link;
+		
+		// close the element that wraps the image
+		$output .= "</{$icontag}>";
+		
+		// get the caption
+		$caption = wptexturize( esc_html( $attachment->post_excerpt ) );
+		
+		// if caption is set
+		if ( !empty( $caption ) )
+			$output .= "\n\t\t\t\t\t\t<{$captiontag} class='gallery-caption'>{$caption}</{$captiontag}>";
+		
+		// close individual gallery item
+		$output .= "\n\t\t\t\t\t</{$itemtag}>";
+		
+		// close gallery row
+		if ( $columns > 0 && ++$i % $columns == 0 )
+			$output .= "\n\t\t\t\t</div>";
+	
+	}
+	
+	// close gallery row
+	if ( $columns > 0 && $i % $columns !== 0 )
+		$output .= "\n\t\t\t</div>";
+
+	// close gallery div
+	$output .= "\n\t\t\t</div><!-- .gallery -->\n";
+
+    return $output;
 }
 
 ?>
