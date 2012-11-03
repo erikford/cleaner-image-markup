@@ -109,10 +109,10 @@ add_filter( 'img_caption_shortcode', 'wap8_html5_image_caption', 10, 3 );
 function wap8_html5_image_caption( $val, $attr, $content = null ) {
 	
 	extract( shortcode_atts( array(
-		'id'		=> '',
-		'align'		=> '',
-		'width'		=> '',
-		'caption'	=> '',
+		'id'      => '',
+		'align'   => '',
+		'width'   => '',
+		'caption' => '',
 	), $attr ) );
 
 	if ( 1 > ( int ) $width || empty( $caption ) ) {
@@ -155,7 +155,7 @@ add_filter( 'post_gallery', 'wap8_tidy_gallery', 10, 2 );
 
 function wap8_tidy_gallery( $output, $attr ) {
 
-	global $post, $wp_locale;
+	global $post;
 	
 	static $instance = 0;
 	$instance++;
@@ -192,12 +192,12 @@ function wap8_tidy_gallery( $output, $attr ) {
 		
 		// arguments for included images
 		$incimgs = array(
-			'include'			=> $include,
-			'post_status'		=> 'inherit',
-			'post_type'			=> 'attachment',
-			'post_mime_type'	=> 'image',
-			'order'				=> $order,
-			'orderby'			=> $orderby
+			'include'        => $include,
+			'post_status'    => 'inherit',
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'image',
+			'order'          => $order,
+			'orderby'        => $orderby
 		);
 		
 		$_attachments = get_posts( $incimgs );
@@ -216,13 +216,13 @@ function wap8_tidy_gallery( $output, $attr ) {
 		
 		// arguments for excluded images
 		$eximgs = array(
-			'post_parent'		=> $id,
-			'exclude'			=> $exclude,
-			'post_status'		=> 'inherit',
-			'post_type'			=> 'attachment',
-			'post_mime_type'	=> 'image',
-			'order'				=> $order,
-			'orderby'			=> $orderby
+			'post_parent'    => $id,
+			'exclude'        => $exclude,
+			'post_status'    => 'inherit',
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'image',
+			'order'          => $order,
+			'orderby'        => $orderby
 		);
 		
 		$attachments = get_children( $eximgs );
@@ -231,12 +231,12 @@ function wap8_tidy_gallery( $output, $attr ) {
 	
 		// arguments for all images
 		$allimgs = array(
-			'post_parent'		=> $id,
-			'post_status'		=> 'inherit',
-			'post_type'			=> 'attachment',
-			'post_mime_type'	=> 'image',
-			'order'				=> $order,
-			'orderby'			=> $orderby
+			'post_parent'    => $id,
+			'post_status'    => 'inherit',
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'image',
+			'order'          => $order,
+			'orderby'        => $orderby
 		);
 	
 		$attachments = get_children( $allimgs );
@@ -262,25 +262,22 @@ function wap8_tidy_gallery( $output, $attr ) {
 	$icontag = tag_escape( $icontag );
 	$captiontag = tag_escape( $captiontag );
 	
-	// store the gallery instance
-	$selector = "gallery-{$instance}";
-	
 	// store the set columns
 	$columns = intval( $columns );
 	$i = 0;
 	
 	// open the gallery div
-	$output = "\n\t\t\t<div id='$selector' class='gallery gallery-{$id}'>";
+	$output = "\n\t\t\t<div id='gallery-{$instance}' class='gallery gallery-{$id}'>";
 	
 	// loop through each attachment
 	foreach ( $attachments as $id => $attachment ) {
 	
 		// open each gallery row
 		if ( $columns > 0 && $i % $columns == 0 )
-			$output .= "\n\t\t\t\t<div class='gallery-row clear'>";
+			$output .= "\n\t\t\t\t<div class='gallery-row tidy-gallery-col-{$columns} clear'>";
 			
 		// open each gallery item
-		$output .= "\n\t\t\t\t\t<{$itemtag} class='gallery-item col-{$columns}'>";
+		$output .= "\n\t\t\t\t\t<{$itemtag} class='gallery-item'>";
 		
 		// open the element that wraps the image
 		$output .= "\n\t\t\t\t\t\t<{$icontag} class='gallery-icon'>";
@@ -293,11 +290,11 @@ function wap8_tidy_gallery( $output, $attr ) {
 		$output .= "</{$icontag}>";
 		
 		// get the caption
-		$caption = wptexturize( esc_html( $attachment->post_excerpt ) );
+		$caption = wptexturize( $attachment->post_excerpt );
 		
 		// if caption is set
 		if ( !empty( $caption ) )
-			$output .= "\n\t\t\t\t\t\t<{$captiontag} class='gallery-caption'>{$caption}</{$captiontag}>";
+			$output .= "\n\t\t\t\t\t\t<{$captiontag} class='wp-caption-text gallery-caption'>{$caption}</{$captiontag}>";
 		
 		// close individual gallery item
 		$output .= "\n\t\t\t\t\t</{$itemtag}>";
