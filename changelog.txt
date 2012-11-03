@@ -8,3 +8,9 @@ Cleaner Image Markup 1.0.1
 
 * Removed the filter reducing the amount of classes applied to images in a post
 * Added a filter to prevent inline styles being printed when using the `[gallery]` shortcode.
+
+Cleaner Image Markup 1.0.2
+==========================
+
+* Developers can now filter the gallery shortcode output.
+* Improved sanitization for gallery column settings.

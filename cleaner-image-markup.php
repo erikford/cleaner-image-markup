@@ -4,7 +4,7 @@
 Plugin Name: Cleaner Image Markup
 Plugin URI: http://www.wearepixel8.com
 Description: A simple plugin that will clean up the HTML image markup produced by WordPress.
-Version: 1.0.1
+Version: 1.0.2
 Author: We Are Pixel8
 Author URI: http://www.wearepixel8.com
 License:
@@ -146,7 +146,7 @@ add_filter( 'post_gallery', 'wap8_tidy_gallery', 10, 2 );
  *
  * @package Cleaner Image Markup
  * @version 1.0.1
- * @since 1.0.1
+ * @since 1.0.2
  * @author Erik Ford for We Are Pixel8 <@notdivisible>
  *
  */
@@ -262,9 +262,12 @@ function wap8_tidy_gallery( $output, $attr ) {
 	$icontag = tag_escape( $icontag );
 	$captiontag = tag_escape( $captiontag );
 	
-	// store the set columns
-	$columns = intval( $columns );
+	// store and sanitize the set columns - props @bradyvercher
+	$columns = ( absint( $columns ) ) ? absint( $columns ) : 1;
 	$i = 0;
+	
+	// allow devs to filter the output
+	$output = apply_filters( 'tidy_post_gallery_output', $attachments, $attr, $instance );
 	
 	// open the gallery div
 	$output = "\n\t\t\t<div id='gallery-{$instance}' class='gallery gallery-{$id}'>";
@@ -273,7 +276,7 @@ function wap8_tidy_gallery( $output, $attr ) {
 	foreach ( $attachments as $id => $attachment ) {
 	
 		// open each gallery row
-		if ( $columns > 0 && $i % $columns == 0 )
+		if ( $i % $columns == 0 )
 			$output .= "\n\t\t\t\t<div class='gallery-row tidy-gallery-col-{$columns} clear'>";
 			
 		// open each gallery item
@@ -300,13 +303,13 @@ function wap8_tidy_gallery( $output, $attr ) {
 		$output .= "\n\t\t\t\t\t</{$itemtag}>";
 		
 		// close gallery row
-		if ( $columns > 0 && ++$i % $columns == 0 )
+		if ( ++$i % $columns == 0 )
 			$output .= "\n\t\t\t\t</div>";
 	
 	}
 	
 	// close gallery row
-	if ( $columns > 0 && $i % $columns !== 0 )
+	if ( $i % $columns !== 0 )
 		$output .= "\n\t\t\t</div>";
 
 	// close gallery div

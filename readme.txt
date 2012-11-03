@@ -4,7 +4,7 @@ Tags: images, image caption, figure, figcaption, gallery
 Requires at least: 3.1
 Compatible up to: 3.4.2
 Tested up to: 3.4.2
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2
 
 A simple plugin that will clean up the HTML image markup produced by WordPress.
@@ -36,3 +36,7 @@ You can install Cleaner Image Markup either via the WordPress Dashboard or by up
 = 1.0.1 =
 * Removed the filter reducing the amount of classes applied to images in a post
 * Added a filter to prevent inline styles being printed when using the `[gallery]` shortcode.
+
+= 1.0.1 =
+* Developers can now filter the gallery shortcode output.
+* Improved sanitization for gallery column settings.
