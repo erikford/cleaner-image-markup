@@ -1,6 +1,6 @@
 === Cleaner Image Markup ===
 Contributors: wearepixel8
-Tags: images, image caption, figure, figcaption
+Tags: images, image caption, figure, figcaption, gallery
 Requires at least: 3.1
 Compatible up to: 3.4.2
 Tested up to: 3.4.2
