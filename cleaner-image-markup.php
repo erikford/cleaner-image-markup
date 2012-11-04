@@ -4,7 +4,7 @@
 Plugin Name: Cleaner Image Markup
 Plugin URI: http://www.wearepixel8.com
 Description: A simple plugin that will clean up the HTML image markup produced by WordPress.
-Version: 1.0.2
+Version: 1.0.3
 Author: We Are Pixel8
 Author URI: http://www.wearepixel8.com
 License:
@@ -57,7 +57,6 @@ function wap8_remove_autop( $content ) {
 /*----------------------------------------------------------------------------*/
 
 add_filter( 'post_thumbnail_html', 'wap8_remove_width_height_attr', 10, 1 );
-add_filter( 'image_send_to_editor', 'wap8_remove_width_height_attr', 10, 1 );
 add_filter( 'the_content', 'wap8_remove_width_height_attr', 10, 1 );
 
 /**
@@ -70,7 +69,7 @@ add_filter( 'the_content', 'wap8_remove_width_height_attr', 10, 1 );
  *
  * @package Cleaner Image Markup
  * @version 1.0.0
- * @since 1.0.0
+ * @since 1.0.3
  * @author Erik Ford for We Are Pixel8 <@notdivisible>
  *
  */
@@ -146,7 +145,7 @@ add_filter( 'post_gallery', 'wap8_tidy_gallery', 10, 2 );
  *
  * @package Cleaner Image Markup
  * @version 1.0.1
- * @since 1.0.2
+ * @since 1.0.3
  * @author Erik Ford for We Are Pixel8 <@notdivisible>
  *
  */
@@ -266,11 +265,14 @@ function wap8_tidy_gallery( $output, $attr ) {
 	$columns = ( absint( $columns ) ) ? absint( $columns ) : 1;
 	$i = 0;
 	
-	// allow devs to filter the output
-	$output = apply_filters( 'tidy_post_gallery_output', $attachments, $attr, $instance );
+	// the wrapper that contains the opening gallery div with the unique gallery instance and id - props @bradyvercher
+	$wrapper = "\n\t\t\t<div id='gallery-{$instance}' class='gallery gallery-{$id}'>";
+	
+	// allow devs to filter the output - props @bradyvercher
+	$output = apply_filters( 'wap8_tidy_gallery_output', $wrapper, $attachments, $attr, $instance );
 	
 	// open the gallery div
-	$output = "\n\t\t\t<div id='gallery-{$instance}' class='gallery gallery-{$id}'>";
+	$output = $wrapper;
 	
 	// loop through each attachment
 	foreach ( $attachments as $id => $attachment ) {
@@ -316,6 +318,7 @@ function wap8_tidy_gallery( $output, $attr ) {
 	$output .= "\n\t\t\t</div><!-- .gallery -->\n";
 
     return $output;
+
 }
 
 ?>

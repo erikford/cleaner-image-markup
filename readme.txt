@@ -37,6 +37,10 @@ You can install Cleaner Image Markup either via the WordPress Dashboard or by up
 * Removed the filter reducing the amount of classes applied to images in a post
 * Added a filter to prevent inline styles being printed when using the `[gallery]` shortcode.
 
-= 1.0.1 =
+= 1.0.2 =
 * Developers can now filter the gallery shortcode output.
 * Improved sanitization for gallery column settings.
+
+= 1.0.3 =
+* Removed image_send_to_editor hook
+* Fixed apply_filters

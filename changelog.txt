@@ -14,3 +14,9 @@ Cleaner Image Markup 1.0.2
 
 * Developers can now filter the gallery shortcode output.
 * Improved sanitization for gallery column settings.
+
+Cleaner Image Markup 1.0.3
+==========================
+
+* Removed image_send_to_editor hook
+* Fixed apply_filters
