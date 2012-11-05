@@ -4,7 +4,7 @@
 Plugin Name: Cleaner Image Markup
 Plugin URI: http://www.wearepixel8.com
 Description: A simple plugin that will clean up the HTML image markup produced by WordPress.
-Version: 1.0.3
+Version: 1.0.4
 Author: We Are Pixel8
 Author URI: http://www.wearepixel8.com
 License:
@@ -145,7 +145,7 @@ add_filter( 'post_gallery', 'wap8_tidy_gallery', 10, 2 );
  *
  * @package Cleaner Image Markup
  * @version 1.0.1
- * @since 1.0.3
+ * @since 1.0.4
  * @author Erik Ford for We Are Pixel8 <@notdivisible>
  *
  */
@@ -268,55 +268,67 @@ function wap8_tidy_gallery( $output, $attr ) {
 	// the wrapper that contains the opening gallery div with the unique gallery instance and id - props @bradyvercher
 	$wrapper = "\n\t\t\t<div id='gallery-{$instance}' class='gallery gallery-{$id}'>";
 	
-	// allow devs to filter the output - props @bradyvercher
+	// allow devs to filter the output - props @bradybercher
 	$output = apply_filters( 'wap8_tidy_gallery_output', $wrapper, $attachments, $attr, $instance );
+	
+	// skip the output generation, if a hook modified the output - props @bradyvercher
+	if ( empty( $output ) || $wrapper == $output ) {
+	
+		// if $output is empty for some reason, restart the output with the default wrapper - props @bradyvercher
+		if ( empty( $output ) ) {
+			
+			$output = $wrapper;
+			
+		}
 	
 	// open the gallery div
 	$output = $wrapper;
 	
-	// loop through each attachment
-	foreach ( $attachments as $id => $attachment ) {
+		// loop through each attachment
+		foreach ( $attachments as $id => $attachment ) {
 	
-		// open each gallery row
-		if ( $i % $columns == 0 )
-			$output .= "\n\t\t\t\t<div class='gallery-row tidy-gallery-col-{$columns} clear'>";
+			// open each gallery row
+			if ( $i % $columns == 0 )
+				$output .= "\n\t\t\t\t<div class='gallery-row tidy-gallery-col-{$columns} clear'>";
 			
-		// open each gallery item
-		$output .= "\n\t\t\t\t\t<{$itemtag} class='gallery-item'>";
+			// open each gallery item
+			$output .= "\n\t\t\t\t\t<{$itemtag} class='gallery-item'>";
 		
-		// open the element that wraps the image
-		$output .= "\n\t\t\t\t\t\t<{$icontag} class='gallery-icon'>";
+			// open the element that wraps the image
+			$output .= "\n\t\t\t\t\t\t<{$icontag} class='gallery-icon'>";
+	
+			// add the image
+			$link = ( ( isset( $attr['link'] ) && 'file' == $attr['link'] ) ? wp_get_attachment_link( $id, $size, false, false ) : wp_get_attachment_link( $id, $size, true, false ) );
+			$output .= $link;
 		
-		// add the image
-		$link = ( ( isset( $attr['link'] ) && 'file' == $attr['link'] ) ? wp_get_attachment_link( $id, $size, false, false ) : wp_get_attachment_link( $id, $size, true, false ) );
-		$output .= $link;
+			// close the element that wraps the image
+			$output .= "</{$icontag}>";
 		
-		// close the element that wraps the image
-		$output .= "</{$icontag}>";
+			// get the caption
+			$caption = wptexturize( $attachment->post_excerpt );
 		
-		// get the caption
-		$caption = wptexturize( $attachment->post_excerpt );
+			// if caption is set
+			if ( !empty( $caption ) )
+				$output .= "\n\t\t\t\t\t\t<{$captiontag} class='wp-caption-text gallery-caption'>{$caption}</{$captiontag}>";
 		
-		// if caption is set
-		if ( !empty( $caption ) )
-			$output .= "\n\t\t\t\t\t\t<{$captiontag} class='wp-caption-text gallery-caption'>{$caption}</{$captiontag}>";
+			// close individual gallery item
+			$output .= "\n\t\t\t\t\t</{$itemtag}>";
 		
-		// close individual gallery item
-		$output .= "\n\t\t\t\t\t</{$itemtag}>";
-		
+			// close gallery row
+			if ( ++$i % $columns == 0 )
+				$output .= "\n\t\t\t\t</div>";
+	
+		}
+	
 		// close gallery row
-		if ( ++$i % $columns == 0 )
-			$output .= "\n\t\t\t\t</div>";
+		if ( $i % $columns !== 0 )
+			$output .= "\n\t\t\t</div>";
+
+		// close gallery div
+		$output .= "\n\t\t\t</div><!-- .gallery -->\n";
 	
 	}
 	
-	// close gallery row
-	if ( $i % $columns !== 0 )
-		$output .= "\n\t\t\t</div>";
-
-	// close gallery div
-	$output .= "\n\t\t\t</div><!-- .gallery -->\n";
-
     return $output;
 
 }

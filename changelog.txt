@@ -18,5 +18,10 @@ Cleaner Image Markup 1.0.2
 Cleaner Image Markup 1.0.3
 ==========================
 
-* Removed image_send_to_editor hook
-* Fixed apply_filters
+* Removed image_send_to_editor hook.
+* Fixed apply_filters.
+
+Cleaner Image Markup 1.0.4
+==========================
+
+* Added a conditional test to see if the gallery output has been filtered.

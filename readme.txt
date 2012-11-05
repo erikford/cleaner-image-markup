@@ -44,3 +44,6 @@ You can install Cleaner Image Markup either via the WordPress Dashboard or by up
 = 1.0.3 =
 * Removed image_send_to_editor hook
 * Fixed apply_filters
+
+= 1.0.4 =
+* Added a conditional test to see if the gallery output has been filtered.
