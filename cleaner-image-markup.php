@@ -24,13 +24,13 @@ License:
 */
 
 /*----------------------------------------------------------------------------*/
-/* Remove Automatic Paragraph
+/* Remove Automatic Paragraph - Images
 /*----------------------------------------------------------------------------*/
 
-add_filter( 'the_content', 'wap8_remove_autop', 10, 1 );
+add_filter( 'the_content', 'wap8_remove_autop_images', 10, 1 );
 
 /**
- * Remove Automatic Paragraph
+ * Remove Automatic Paragraph - Images
  *
  * Remove the automatic wrapping of images with a paragraph tag.
  *
@@ -44,7 +44,7 @@ add_filter( 'the_content', 'wap8_remove_autop', 10, 1 );
  *
  */
 
-function wap8_remove_autop( $content ) {
+function wap8_remove_autop_images( $content ) {
 	
 	$content = preg_replace( '/<p>\\s*?(<a .*?><img.*?><\\/a>|<img.*?>)?\\s*<\\/p>/s', '\1', $content );
 	
@@ -266,7 +266,7 @@ function wap8_tidy_gallery( $output, $attr ) {
 	$i = 0;
 	
 	// the wrapper that contains the opening gallery div with the unique gallery instance and id - props @bradyvercher
-	$wrapper = "\n\t\t\t<div id='gallery-{$instance}' class='gallery gallery-{$id}'>";
+	$wrapper = "\n\t\t\t<div id='gallery-{$instance}' class='gallery gallery-{$id} tidy-gallery-col-{$columns}'>";
 	
 	// allow devs to filter the output - props @bradybercher
 	$output = apply_filters( 'wap8_tidy_gallery_output', $wrapper, $attachments, $attr, $instance );
@@ -281,15 +281,12 @@ function wap8_tidy_gallery( $output, $attr ) {
 			
 		}
 	
-	// open the gallery div
-	$output = $wrapper;
-	
 		// loop through each attachment
 		foreach ( $attachments as $id => $attachment ) {
 	
 			// open each gallery row
 			if ( $i % $columns == 0 )
-				$output .= "\n\t\t\t\t<div class='gallery-row tidy-gallery-col-{$columns} clear'>";
+				$output .= "\n\t\t\t\t<div class='gallery-row clear'>";
 			
 			// open each gallery item
 			$output .= "\n\t\t\t\t\t<{$itemtag} class='gallery-item'>";
